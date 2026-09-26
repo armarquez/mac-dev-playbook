@@ -18,6 +18,17 @@ dockitems_persist: []
 
 configure_sudoers: false
 sudoers_custom_config: ""
+
+# Set to 'true' to enroll this Mac on the tailnet via Tailscale SSH
+# (one-time bootstrap -- see tasks/tailscale.yml). tailscale_authkey has no
+# default on purpose: pass it with -e at runtime, sourced from wherever
+# your tailnet auth keys live, never committed here.
+configure_tailscale: false
+tailscale_authkey: ""
+tailscale_advertise_tags: "tag:home-infra"
+# Set to 'false' to build the `tailscale up` command without running it
+# (e.g. CI, or verifying the args before enrolling a real device).
+tailscale_manage_service: true
 # Example:
 # sudoers_custom_config: |
 #   # Allow users in admin group to use sudo with no password.
@@ -59,6 +70,13 @@ homebrew_installed_packages:
   - rsync
   - rustdesk
   - openssl
+  # Formula, NOT the tailscale-app cask -- the cask's GUI/sandboxed build
+  # cannot run an SSH server at all (tailscale/tailscale#14107), and this
+  # repo's whole point is unattended Tailscale SSH. See
+  # docs/beast-onboarding-plan.md in the boogey/infra repo for the full
+  # writeup, including why the two can't just be assumed compatible from
+  # Homebrew metadata alone.
+  - tailscale
   - pv
   - stow
   - tldr
@@ -87,7 +105,6 @@ homebrew_cask_apps:
   # - sequel-ace
   - slack
   # - sublime-text
-  - tailscale-app
   - transmit
   - visual-studio-code
 

@@ -9,7 +9,16 @@ homebrew_installed_packages:
   - pv
   - wget
   - wrk
+  - tailscale
 
 homebrew_cask_apps:
   - firefox
   - licecap
+
+# Exercises tasks/tailscale.yml's real `brew services start tailscale` on
+# real macOS CI runners, without enrolling a real device on the tailnet --
+# tailscale_manage_service: false skips the actual `tailscale up` call.
+# See docs/beast-onboarding-plan.md in boogey/infra for the full context.
+configure_tailscale: true
+tailscale_manage_service: false
+tailscale_authkey: "test-fake-key-not-a-real-secret"

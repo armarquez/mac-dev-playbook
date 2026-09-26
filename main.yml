@@ -34,6 +34,10 @@
       when: configure_sudoers
       tags: ['sudoers']
 
+    - import_tasks: tasks/tailscale.yml
+      when: configure_tailscale
+      tags: ['tailscale']
+
     - import_tasks: tasks/iterm.yml
       when: configure_terminal
       tags: ['terminal']
