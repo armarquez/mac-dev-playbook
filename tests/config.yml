@@ -22,3 +22,10 @@ homebrew_cask_apps:
 configure_tailscale: true
 tailscale_manage_service: false
 tailscale_authkey: "test-fake-key-not-a-real-secret"
+
+# dotfiles_repo (default.config.yml) points at a private personal repo CI
+# has no access to -- pre-existing gap, unrelated to Tailscale, but it was
+# aborting the whole integration run before tasks/tailscale.yml ever got a
+# chance to execute. Disabling it here is scoped to the test fixture only;
+# does not change beast's real provisioning behavior.
+configure_dotfiles: false
