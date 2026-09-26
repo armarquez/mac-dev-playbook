@@ -39,5 +39,5 @@
   become: true
   register: _tailscale_up
   changed_when: "'already running' not in _tailscale_up.stderr"
-  no_log: true # prevent authkey from appearing in logs
+  no_log: true  # prevent authkey from appearing in logs
   when: tailscale_manage_service | default(true)
