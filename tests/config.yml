@@ -29,3 +29,15 @@ tailscale_authkey: "test-fake-key-not-a-real-secret"
 # chance to execute. Disabling it here is scoped to the test fixture only;
 # does not change beast's real provisioning behavior.
 configure_dotfiles: false
+
+# default.config.yml's mas_installed_apps (Amphetamine) makes the
+# geerlingguy.mac.mas role run unconditionally. The `mas` CLI needs an
+# already-signed-in Mac App Store session, which no CI runner has. Leading
+# hypothesis (not confirmed via log -- live logs for an in-progress job
+# aren't fetchable via the API, only after completion): with dotfiles
+# disabled above, the next run reached this role for the first time (every
+# prior run aborted earlier, at the dotfiles clone) and hung for 5+ hours
+# instead of failing loud, until manually cancelled. Disabling here to test
+# the hypothesis; pre-existing gap in the test fixture either way,
+# unrelated to Tailscale.
+mas_installed_apps: []
