@@ -18,7 +18,7 @@
   retries: 3
   delay: 5
   until: zgenom_operation is succeeded
-  
+
 - name: Show what would happen in check mode
   debug:
     msg: "Would clone zgenom to {{ zgenom_dest }}"

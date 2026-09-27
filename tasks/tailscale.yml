@@ -1,0 +1,48 @@
+---
+# One-time bootstrap: enroll this Mac on the tailnet via Tailscale SSH.
+# `tailscale` itself is installed by the geerlingguy.mac.homebrew role from
+# homebrew_installed_packages (the formula, not the tailscale-app cask --
+# the cask's sandboxed build can't run an SSH server at all).
+#
+# Mirrors ansible/roles/mqz-tailscale/tasks/main.yaml's args-building
+# pattern in the boogey/infra repo, adapted for brew services instead of
+# systemd.
+
+# `brew services start` prints "Successfully started" unconditionally,
+# even when the service was already running -- Homebrew's own maintainers
+# confirm this is intentional (launchctl-level limitation, not something
+# they'll change: Homebrew/homebrew-services#61). Checking `brew services
+# list` first is the only reliable way to make this idempotent -- without
+# it, this task would report changed=true on every single run.
+- name: Check current tailscaled service state
+  ansible.builtin.command: brew services list
+  register: _brew_services_list
+  changed_when: false
+
+# NOT become: true -- Homebrew refuses to run as root at all (confirmed
+# live in CI: "Need to download .../packages.arm64_sequoia.jws.json but
+# cannot as root! Run `brew update` without `sudo` first then try
+# again."). tailscaled itself still runs with root privileges once
+# started -- that's handled by its own launchd plist, not by sudo-ing the
+# brew command that starts it.
+- name: Start tailscaled via brew services
+  ansible.builtin.command: brew services start tailscale
+  when: _brew_services_list.stdout is not regex('tailscale\s+started')
+
+# Fact-build is unconditional so this can be verified (e.g. via --check)
+# without actually enrolling a device. Only the invocation below is gated
+# by tailscale_manage_service.
+- name: Build tailscale up arguments
+  ansible.builtin.set_fact:
+    _tailscale_up_args: >-
+      --ssh
+      --authkey={{ tailscale_authkey }}
+      --advertise-tags={{ tailscale_advertise_tags }}
+
+- name: Connect to Tailscale network
+  ansible.builtin.command: "tailscale up {{ _tailscale_up_args }}"
+  become: true
+  register: _tailscale_up
+  changed_when: "'already running' not in _tailscale_up.stderr"
+  no_log: true  # prevent authkey from appearing in logs
+  when: tailscale_manage_service | default(true)
