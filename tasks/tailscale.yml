@@ -19,9 +19,14 @@
   register: _brew_services_list
   changed_when: false
 
+# NOT become: true -- Homebrew refuses to run as root at all (confirmed
+# live in CI: "Need to download .../packages.arm64_sequoia.jws.json but
+# cannot as root! Run `brew update` without `sudo` first then try
+# again."). tailscaled itself still runs with root privileges once
+# started -- that's handled by its own launchd plist, not by sudo-ing the
+# brew command that starts it.
 - name: Start tailscaled via brew services
   ansible.builtin.command: brew services start tailscale
-  become: true
   when: _brew_services_list.stdout is not regex('tailscale\s+started')
 
 # Fact-build is unconditional so this can be verified (e.g. via --check)
